@@ -25,7 +25,7 @@ time0 = time.time()
 os.chdir('/home/jupyter/projects_gcp_cpu/spx/src')
 os.getcwd()
 
-tickerStrings = ['^GSPC', '^IXIC', '^RUT', 'EEM', 'EMXC', 'EEMA', 'VTHR']
+tickerStrings = ['^GSPC', '^IXIC', '^RUT', 'EEM', 'EMXC', 'EEMA', 'VTHR', 'SLQD', 'VNQI', 'VYMI', 'IGIB', 'VXUS', 'FEM']
 df_list = list()
 for ticker in tickerStrings:
     data = yf.download(ticker, 
@@ -42,7 +42,7 @@ df = df[['Close', 'ticker']]
 df.replace({'^GSPC':'Spx', '^IXIC':'Nasdaq', '^RUT':'Russel'}, inplace=True)
 df = (df.pivot_table(index=['Datetime'], columns='ticker', values='Close'))
 
-df.columns = ['EEM', 'EEMA', 'EMXC', 'Nasdaq', 'Russel', 'Spx', 'VTHR']
+df.columns = ['EEM', 'EEMA', 'EMXC', 'Nasdaq', 'Russel', 'Spx', 'VTHR', 'SLQD', 'VNQI', 'VYMI', 'IGIB', 'VXUS', 'FEM']
 df['time'] = df.index.time
 df['date'] = df.index.date
 
@@ -61,7 +61,7 @@ df0 = df.copy()
 
 ### now i wanna do feature engineering for all assets 
 
-asset_list = ['Spx', 'Nasdaq', 'Russel', 'EMXC', 'EEMA', 'EEM', 'VTHR']
+asset_list = ['Spx', 'Nasdaq', 'Russel', 'EMXC', 'EEMA', 'EEM', 'VTHR', 'SLQD', 'VNQI', 'VYMI', 'IGIB', 'VXUS', 'FEM']
 
 for asset in asset_list:
     
@@ -102,7 +102,20 @@ display(time.time() - time0, df.head())
 
 t_df = df.copy()
 t_df.rename(columns={'VTHR_ret':'target'}, inplace=True)
-t_df.drop(columns = ['time', 'date', 'Spx_ret', 'Nasdaq_ret', 'Russel_ret', 'EEMA_ret', 'EEM_ret', 'EMXC_ret'], 
+t_df.drop(columns = ['time',
+                     'date',
+                     'Spx_ret',
+                     'Nasdaq_ret',
+                     'Russel_ret',
+                     'EEMA_ret',
+                     'EEM_ret',
+                     'EMXC_ret',
+                     'SLQD_ret',
+                     'VNQI_ret',
+                     'VYMI_ret',
+                     'IGIB_ret',
+                     'VXUS_ret',
+                     'FEM_ret'], 
           inplace=True)
 t_df
 
@@ -116,21 +129,35 @@ X = t_df
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=int(0.2*X.shape[0]))
 display(X_train.shape, X_test.shape, y_train.shape, X_train.head())
 
+cat_cols = []
+num_cols = [col for col in X_train.columns if col not in cat_cols]
+
+feature_transformer = ColumnTransformer([
+    ("num", StandardScaler(), num_cols),
+    ("cat", OneHotEncoder(sparse = False, handle_unknown="ignore"), cat_cols),
+    ], remainder = "passthrough")
+
+X_train = pd.DataFrame(feature_transformer.fit_transform(X_train), 
+                       columns=feature_transformer.get_feature_names_out())
+X_test = pd.DataFrame(feature_transformer.transform(X_test), 
+                      columns=feature_transformer.get_feature_names_out())
+
+
 time1 = time.time()
 
 # xgbm = XGBRegressor()
-# parameters = {'eta':[0.03, 0.04, 0.05, 0.06, 0.07], 
+# parameters = {'eta':[0.02, 0.03, 0.04, 0.05, 0.06], 
 #               'max_depth':[2, 3],
 #              'subsample':[0.6, 0.8],
 #              'colsample_bytree':[0.6, 0.8]}
-# xgbgs = GridSearchCV(xgbm, parameters, cv=2)
+# xgbgs = GridSearchCV(xgbm, parameters, cv=4)
 # xgbgs.fit(X_train, y_train)
 # print(xgbgs.best_params_)
 # xgbt = XGBRegressor(**xgbgs.best_params_)
-# xgbt.fit(X_train, y_train)
+xgbt.fit(X_train, y_train)
 
 enm = ElasticNet()
-parameters = {'alpha':[0, 0.00025, 0.0005, 0.00075, 0.001, 0.002, 0.003, 0.005], 
+parameters = {'alpha':[0, 0.00005, 0.0001, 0.0002, 0.0003, 0.0005, 0.001], 
               'l1_ratio':[0, 0.02, 0.05, 0.1, 0.25, 0.5, 1]}
 enmgs = GridSearchCV(enm, parameters, scoring='r2', cv=4)
 enmgs.fit(X_train, y_train)
@@ -138,8 +165,8 @@ print(enmgs.best_params_)
 enmt = XGBRegressor(**enmgs.best_params_)
 enmt.fit(X_train, y_train)
 
-print('In sample, xgb: ', r2_score(y_train, xgbgs.predict(X_train)))
-print('Out of sample, xgb: ', r2_score(y_test, xgbgs.predict(X_test)))
+print('In sample, xgb: ', r2_score(y_train, xgbt.predict(X_train)))
+print('Out of sample, xgb: ', r2_score(y_test, xgbt.predict(X_test)))
 
 print('In sample, ElasticNet: ', r2_score(y_train, enmgs.predict(X_train)))
 print('Out of sample, ElasticNet: ', r2_score(y_test, enmgs.predict(X_test)))
