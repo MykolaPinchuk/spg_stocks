@@ -25,13 +25,13 @@ time0 = time.time()
 os.chdir('/home/jupyter/projects_gcp_cpu/spx/src')
 os.getcwd()
 
-tickerStrings = ['^GSPC', '^IXIC', '^RUT', 'EEM', 'EMXC']
+tickerStrings = ['^GSPC', '^IXIC', '^RUT', 'EEM', 'EMXC', 'EEMA', 'VTHR']
 df_list = list()
 for ticker in tickerStrings:
     data = yf.download(ticker, 
                        group_by="Ticker", 
-                       period='7d', 
-                       interval='1m', 
+                       period='60d', 
+                       interval='2m', 
                        prepost=False, 
                        auto_adjust=True)
     data['ticker'] = ticker  
@@ -42,12 +42,12 @@ df = df[['Close', 'ticker']]
 df.replace({'^GSPC':'Spx', '^IXIC':'Nasdaq', '^RUT':'Russel'}, inplace=True)
 df = (df.pivot_table(index=['Datetime'], columns='ticker', values='Close'))
 
-df.columns = ['EEM', 'EMXC', 'Nasdaq', 'Russel', 'Spx']
+df.columns = ['EEM', 'EEMA', 'EMXC', 'Nasdaq', 'Russel', 'Spx', 'VTHR']
 df['time'] = df.index.time
 df['date'] = df.index.date
 
 df = df.fillna(method='ffill')
-dayclose = df[df.time==datetime.time(15, 59, 0)]
+dayclose = df[df.time==datetime.time(15, 58, 0)]
 dayopen = df[df.time==datetime.time(9, 30, 0)]
 dayopen.reset_index(drop=True, inplace=True)
 dayclose.reset_index(drop=True, inplace=True)
@@ -55,10 +55,13 @@ dayclose.sort_values(by='date')
 display(df, dayopen.head(), dayclose.head())
 df0 = df.copy()
 
+# df['hour'] = pd.to_datetime(df['time'], format='%H:%M:%S').dt.hour
+# df['minute'] = pd.to_datetime(df['time'], format='%H:%M:%S').dt.minute
+
 
 ### now i wanna do feature engineering for all assets 
 
-asset_list = ['Spx', 'Nasdaq', 'Russel', 'EEM', 'EMXC']
+asset_list = ['Spx', 'Nasdaq', 'Russel', 'EMXC', 'EEMA', 'EEM', 'VTHR']
 
 for asset in asset_list:
     
@@ -98,8 +101,8 @@ display(time.time() - time0, df.head())
 ### do modeling ###
 
 t_df = df.copy()
-t_df.rename(columns={'EMXC_ret':'target'}, inplace=True)
-t_df.drop(columns = ['time', 'date', 'Spx_ret', 'Nasdaq_ret', 'Russel_ret', 'EEM_ret'], 
+t_df.rename(columns={'VTHR_ret':'target'}, inplace=True)
+t_df.drop(columns = ['time', 'date', 'Spx_ret', 'Nasdaq_ret', 'Russel_ret', 'EEMA_ret', 'EEM_ret', 'EMXC_ret'], 
           inplace=True)
 t_df
 
@@ -115,39 +118,50 @@ display(X_train.shape, X_test.shape, y_train.shape, X_train.head())
 
 time1 = time.time()
 
-xgbm = XGBRegressor()
-parameters = {'eta':[0.03, 0.04, 0.05, 0.06, 0.07], 
-              'max_depth':[2, 3],
-             'subsample':[0.8, 1],
-             'colsample_bytree':[0.6, 1]}
-xgbgs = GridSearchCV(xgbm, parameters, cv=2)
-xgbgs.fit(X_train, y_train)
-print(xgbgs.best_params_)
+# xgbm = XGBRegressor()
+# parameters = {'eta':[0.03, 0.04, 0.05, 0.06, 0.07], 
+#               'max_depth':[2, 3],
+#              'subsample':[0.6, 0.8],
+#              'colsample_bytree':[0.6, 0.8]}
+# xgbgs = GridSearchCV(xgbm, parameters, cv=2)
+# xgbgs.fit(X_train, y_train)
+# print(xgbgs.best_params_)
+# xgbt = XGBRegressor(**xgbgs.best_params_)
+# xgbt.fit(X_train, y_train)
 
-rdm = ElasticNet()
-parameters = {'alpha':[0, 0.001, 0.01, 0.05, 0.1, 0.2], 
-              'l1_ratio':[0, 0.2, 0.5, 0.8, 1]}
-rmgs = GridSearchCV(rdm, parameters, scoring='r2', cv=4)
-rmgs.fit(X_train, y_train)
-print(rmgs.best_params_)
+enm = ElasticNet()
+parameters = {'alpha':[0, 0.00025, 0.0005, 0.00075, 0.001, 0.002, 0.003, 0.005], 
+              'l1_ratio':[0, 0.02, 0.05, 0.1, 0.25, 0.5, 1]}
+enmgs = GridSearchCV(enm, parameters, scoring='r2', cv=4)
+enmgs.fit(X_train, y_train)
+print(enmgs.best_params_)
+enmt = XGBRegressor(**enmgs.best_params_)
+enmt.fit(X_train, y_train)
 
 print('In sample, xgb: ', r2_score(y_train, xgbgs.predict(X_train)))
 print('Out of sample, xgb: ', r2_score(y_test, xgbgs.predict(X_test)))
 
-print('In sample, ridge: ', r2_score(y_train, rmgs.predict(X_train)))
-print('Out of sample, ridge: ', r2_score(y_test, rmgs.predict(X_test)))
+print('In sample, ElasticNet: ', r2_score(y_train, enmgs.predict(X_train)))
+print('Out of sample, ElasticNet: ', r2_score(y_test, enmgs.predict(X_test)))
 
 print('Total time: ', time.time()-time0)
 
 
+# explainerxgbc = shap.TreeExplainer(xgbt)
+explainerxgbc = shap.Explainer(enmt)
 
+shap_values_XGBoost_test = explainerxgbc.shap_values(X_test)
+shap_values_XGBoost_train = explainerxgbc.shap_values(X_train)
 
+vals = np.abs(shap_values_XGBoost_test).mean(0)
+feature_names = X_test.columns
+feature_importance = pd.DataFrame(list(zip(feature_names, vals)),
+                                 columns=['col_name','feature_importance_vals'])
+feature_importance.sort_values(by=['feature_importance_vals'],
+                              ascending=False, inplace=True)
 
-
-
-
-
-
+shap.summary_plot(shap_values_XGBoost_test, X_test, plot_type="bar", plot_size=(6,6), max_display=20)
+shap.summary_plot(shap_values_XGBoost_train, X_train,plot_type="dot", plot_size=(6,6), max_display=20)
 
 
 
