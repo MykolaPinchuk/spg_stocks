@@ -1,0 +1,39 @@
+import numpy as np
+import pandas as pd
+import os, time, warnings, random, requests, datetime
+import functools as ft
+import yfinance as yf
+
+pd.set_option('display.max_columns', 100)
+pd.set_option('mode.chained_assignment', None)
+pd.set_option('display.expand_frame_repr', False)
+warnings.filterwarnings('ignore') 
+
+time0 = time.time()
+
+tickerStrings = ['^GSPC', '^IXIC', '^RUT', 'EEM', 'EMXC', 'EEMA', 'VTHR']
+df_list = list()
+for ticker in tickerStrings:
+    data = yf.download(ticker, 
+                       group_by="Ticker", 
+                       period='60d', 
+                       interval='2m', 
+                       prepost=False, 
+                       auto_adjust=True)
+    data['ticker'] = ticker  
+    df_list.append(data)
+
+df = pd.concat(df_list)
+df = df[['Close', 'ticker']]
+df.replace({'^GSPC':'Spx', '^IXIC':'Nasdaq', '^RUT':'Russel'}, inplace=True)
+df = (df.pivot_table(index=['Datetime'], columns='ticker', values='Close'))
+df.columns = ['EEM', 'EEMA', 'EMXC', 'Nasdaq', 'Russel', 'Spx', 'VTHR']
+
+print(df.head())
+first_day = df.index.date.min()
+
+df.to_csv('data_start_' + 
+str(first_day.year) + 
+str(first_day.month) + 
+str(first_day.day) + 
+'.csv')

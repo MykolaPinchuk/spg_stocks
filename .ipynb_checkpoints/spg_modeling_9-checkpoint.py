@@ -132,7 +132,7 @@ xgbt = XGBRegressor(n_estimators=500, eta=0.005, max_depth=2, subsample=0.6, col
 xgbt.fit(X_train, y_train)
 
 enm = ElasticNet()
-parameters = {'alpha':[0.001, 0.002, 0.003, 0.005], 
+parameters = {'alpha':[0.0005, 0.001, 0.002, 0.003, 0.005], 
               'l1_ratio':[0, 0.02, 0.05, 0.1, 0.25, 0.5, 1]}
 enmgs = GridSearchCV(enm, parameters, scoring='r2', cv=4)
 enmgs.fit(X_train, y_train)
@@ -170,4 +170,17 @@ shap.summary_plot(shap_values_XGBoost_train, X_train,plot_type="dot", plot_size=
 # 5,000 obs is definitely not enough for xgb regression, so it is not even worth trying.
 
 
+"""
+print(f'''minimum and maximum values in train sample are 
+{y_train.min()}, {y_train.max()}''')
+print(f'''minimum and maximum values in test sample are 
+{y_test.min()}, {y_test.max()}''')
+
+print(f'''predicted minimum and maximum values in train sample are 
+{enmt.predict(X_train).min()}, {enmt.predict(X_train).max()}''')
+print(f'''predicted minimum and maximum values in test sample are 
+{enmt.predict(X_test).min()}, {enmt.predict(X_test).max()}''')
+
+may want to add truncation to predicted values later
+"""
 
