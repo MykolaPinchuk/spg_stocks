@@ -12,3 +12,6 @@ Currently, I plan the following project dev cycle:
 - v1.5: add model retraining every week
 - v2.0: store data in BigQuery. add dashboard for feature distribution and train-serving skew
 - v2.5: create performance-related alerts 
+
+Notes:
+when building v0.1 relying on the standard project dev/prod pipeline, need to do pip install --upgrade google-cloud-storage to make main.py work
