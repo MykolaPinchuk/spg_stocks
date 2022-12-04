@@ -1,18 +1,8 @@
 import numpy as np
 import pandas as pd
 import os, time, warnings, random, requests, datetime
-import matplotlib.pyplot as plt
 import functools as ft
 import yfinance as yf
-
-from sklearn.compose import ColumnTransformer, make_column_transformer
-from sklearn.preprocessing import LabelBinarizer, LabelEncoder, OrdinalEncoder, OneHotEncoder, StandardScaler
-from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet
-from sklearn.model_selection import RandomizedSearchCV, GridSearchCV, train_test_split, KFold
-from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier, VotingClassifier
-from sklearn.metrics import accuracy_score, f1_score, r2_score, mean_squared_error
-from sklearn.inspection import permutation_importance
-from xgboost import XGBClassifier, XGBRegressor
 
 pd.set_option('display.max_columns', 100)
 pd.set_option('mode.chained_assignment', None)
@@ -21,15 +11,14 @@ warnings.filterwarnings('ignore')
 
 time0 = time.time()
 
-os.chdir('/home/jupyter/projects_gcp_cpu/spx/src')
-os.getcwd()
+data_path = '/home/jupyter/project_repos/spg_stocks/spg_stocks/data'
 
 tickerStrings = ['^GSPC', '^IXIC', '^RUT', 'EEM', 'EMXC', 'EEMA', 'VTHR']
 df_list = list()
 for ticker in tickerStrings:
     data = yf.download(ticker, 
                        group_by="Ticker", 
-                       period='60d', 
+                       period='1d', 
                        interval='2m', 
                        prepost=False, 
                        auto_adjust=True)
@@ -41,3 +30,20 @@ df = df[['Close', 'ticker']]
 df.replace({'^GSPC':'Spx', '^IXIC':'Nasdaq', '^RUT':'Russel'}, inplace=True)
 df = (df.pivot_table(index=['Datetime'], columns='ticker', values='Close'))
 df.columns = ['EEM', 'EEMA', 'EMXC', 'Nasdaq', 'Russel', 'Spx', 'VTHR']
+
+#print(df.head())
+last_day = df.index.date.max()
+
+os.chdir(data_path)
+
+file_name = 'data_last_' + \
+str(last_day.year) + \
+str(last_day.month) + \
+str(last_day.day) + \
+'.csv'
+
+df.to_csv(file_name)
+
+print(f'''Data downloaded successfully. Stored in {data_path + '/'}. 
+File has {df.shape[0]} rows, is {os.stat(file_name).st_size/(2**20)} MB.
+Total script time is {time.time()-time0} sec''')
