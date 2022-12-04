@@ -1,17 +1,17 @@
+### This script is an evolution of 'predict.py' with Flask deployment added
+
 import numpy as np
 import pandas as pd
 import os, time, warnings, requests, datetime, joblib
 import functools as ft
 import yfinance as yf
 
+from flask import Flask, render_template, request
+app = Flask(__name__)
 from sklearn.linear_model import ElasticNet
 from google.cloud import storage
 
-project_name = 'GCP-pp2'
-project_id = 'valid-heuristic-369117'
-regionn = 'us-west1'
-
-time0 = time.time()
+### Part 1: Use model to generate prediction
 
 tickerStrings = ['^GSPC', '^IXIC', '^RUT', 'EEM', 'EMXC', 'EEMA', 'VTHR']
 df_list = list()
@@ -41,8 +41,6 @@ dayopen = df[df.time==datetime.time(9, 30, 0)]
 dayopen.reset_index(drop=True, inplace=True)
 dayclose.reset_index(drop=True, inplace=True)
 dayclose.sort_values(by='date')
-
-### now i wanna do feature engineering for all assets 
 
 asset_list = ['Spx', 'Nasdaq', 'Russel', 'EMXC', 'EEMA', 'EEM', 'VTHR']
 
@@ -78,7 +76,6 @@ for asset in asset_list:
 prediction_from = df.datetime.iloc[df.shape[0]-1] 
 prediction_to = df.datetime.iloc[df.shape[0]-1] + datetime.timedelta(minutes = 2)
     
-### do prediction ###
 
 model_path = '/home/jupyter/project_repos/spg_stocks/spg_stocks/stocks-app/en_model.pkl'
 trained_model = joblib.load(open(model_path, "rb"))
@@ -89,11 +86,19 @@ X.drop(columns = ['datetime', 'time', 'date',
                   inplace=True,
                   errors = 'ignore')
 
-if(X.count().sum() < X.shape[1]):
-    print(f'''There are {X.shape[1] - X.count().sum()} missing values. 
-          There will be an error''')
+# if(X.count().sum() < X.shape[1]):
+#     print(f'''There are {X.shape[1] - X.count().sum()} missing values. 
+#           There will be an error''')
+# print(f'''Prediction for Russel 3000 return from {prediction_from} 
+#       to {prediction_to} is {trained_model.predict(X)}''')
+# print('Total time: ', time.time()-time0)
 
-print(f'''Prediction for Russel 3000 return from {prediction_from} 
-      to {prediction_to} is {trained_model.predict(X)}''')
+model_prediction = trained_model.predict(X)
 
-print('Total time: ', time.time()-time0)
+### Part 2: Use Flask to build a simple website
+
+@app.route('/', methods=['GET','POST'])
+def predict():
+    return render_template('predict.html', prediction = model_prediction)  
+if __name__ == '__main__':
+    app.run(debug=True)
