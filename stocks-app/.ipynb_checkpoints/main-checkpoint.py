@@ -131,12 +131,16 @@ X.drop(columns = ['datetime', 'time', 'date',
 #       to {prediction_to} is {trained_model.predict(X)}''')
 # print('Total time: ', time.time()-time0)
 
-model_prediction = trained_model.predict(X)
+model_prediction = trained_model.predict(X)[0]
+model_prediction = str(model_prediction)[:6]
 
 ### Part 2: Use Flask to build a simple website
 
 @app.route('/', methods=['GET','POST'])
 def predict():
-    return render_template('predict.html', prediction = model_prediction)  
+    return render_template('predict.html', 
+                           prediction=model_prediction,
+                           prediction_from=prediction_from,
+                           prediction_to=prediction_to)  
 if __name__ == '__main__':
     app.run(debug=True)
