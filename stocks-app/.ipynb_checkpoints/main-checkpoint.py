@@ -142,7 +142,7 @@ def predict():
 
         model_prediction = trained_model.predict(X)[0]
         model_prediction = str(model_prediction)[:6]
-        prediction_runtime = time.time() - time0
+        prediction_runtime = str(time.time() - time0)[:6]
         
         return render_template('predict.html', 
                                prediction=model_prediction,
