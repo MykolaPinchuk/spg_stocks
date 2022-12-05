@@ -78,9 +78,6 @@ for i in range(df_tail.shape[0]):
 df = pd.concat([df_head, df_tail_new], axis=0)
 
     
-    
-
-
 for asset in asset_list:
     
     df[asset + '_ret'] = 100*(df[asset]/df[asset].shift(1)-1)
@@ -136,11 +133,15 @@ model_prediction = str(model_prediction)[:6]
 
 ### Part 2: Use Flask to build a simple website
 
-@app.route('/', methods=['GET','POST'])
+@app.route('/')
+def home():
+    return render_template('home.html')
+@app.route('/predict/', methods=['GET','POST'])
 def predict():
     return render_template('predict.html', 
                            prediction=model_prediction,
                            prediction_from=prediction_from,
-                           prediction_to=prediction_to)  
+                           prediction_to=prediction_to,
+                           pull_time=pull_time)
 if __name__ == '__main__':
     app.run(debug=True)
