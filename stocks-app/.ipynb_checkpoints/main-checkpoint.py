@@ -139,10 +139,12 @@ def home():
 @app.route('/predict/', methods=['GET','POST'])
 def predict():
     if request.method == "POST":
+        user_click_time = datetime.datetime.now()
         return render_template('predict.html', 
                                prediction=model_prediction,
                                prediction_from=prediction_from,
                                prediction_to=prediction_to,
-                               pull_time=pull_time)
+                               pull_time=pull_time,
+                               click_time=click_time)
 if __name__ == '__main__':
     app.run(debug=True)
