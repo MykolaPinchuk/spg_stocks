@@ -2,7 +2,7 @@
 
 import numpy as np
 import pandas as pd
-import os, time, warnings, requests, datetime, joblib
+import os, time, warnings, requests, datetime, joblib, pytz
 import functools as ft
 import yfinance as yf
 
@@ -18,7 +18,7 @@ df_list = list()
 for ticker in tickerStrings:
     data = yf.download(ticker, 
                        group_by="Ticker", 
-                       period='4d', 
+                       period='5d', 
                        interval='2m', 
                        prepost=False, 
                        auto_adjust=True)
@@ -37,12 +37,47 @@ df['datetime'] = df.index
 
 df = df.fillna(method='ffill')
 dayclose = df[df.time==datetime.time(15, 58, 0)]
+dayclose = dayclose.append(df.tail(1))
+# this is needed for later join. prices from the last row will enevr be used.
 dayopen = df[df.time==datetime.time(9, 30, 0)]
 dayopen.reset_index(drop=True, inplace=True)
 dayclose.reset_index(drop=True, inplace=True)
 dayclose.sort_values(by='date')
 
 asset_list = ['Spx', 'Nasdaq', 'Russel', 'EMXC', 'EEMA', 'EEM', 'VTHR']
+
+df_head = df.iloc[0:(df.shape[0]-15),:]
+
+pull_time = datetime.datetime.now()
+pull_time = pull_time.astimezone(pytz.timezone('America/New_York'))
+pull_time = pull_time.replace(tzinfo=None)
+pull_time_seconds = (pull_time - datetime.datetime(2022,1,1)).total_seconds()
+# this is number of seconds passed since the last 2-min point I want to have in my data
+df_tail = df.tail(15)
+# display(df_tail)
+
+df_tail_new = pd.DataFrame(columns = df_tail.columns)
+
+# this for loop keeps obs only if they correspond to 2-min time points
+# and the last one after 2-min point if that point is not available
+for i in range(df_tail.shape[0]):
+    temp_time = df_tail.iloc[i,:]['datetime']
+    diff_sec = (pull_time - temp_time).total_seconds()
+    if (diff_sec >= 120) & (temp_time.minute%2 == 0) & (temp_time.second == 0):
+        df_tail_new = df_tail_new.append(df_tail.iloc[i])
+    if (diff_sec < 120):   
+        if (temp_time.minute%2 == 0) & (temp_time.second == 0):
+            df_tail_new = df_tail_new.append(df_tail.iloc[i])
+            break
+        elif (diff_sec < pull_time_seconds%120):
+            df_tail_new = df_tail_new.append(df_tail.iloc[i])
+            break
+        
+df = pd.concat([df_head, df_tail_new], axis=0)
+
+    
+    
+
 
 for asset in asset_list:
     
