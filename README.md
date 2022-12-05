@@ -4,7 +4,8 @@ This project will predict returns in real time at 2-minute frequency.
 
 Currently, I plan the following project dev cycle:
 - v0.1: MVP, serves predictions, which are usually up-to-date.
-- v0.2: new webpage structure, predictions made the moment when end user clicks button
+- v0.2: More intuitive output text.
+- v0.3: new webpage structure, predictions made the moment when end user clicks button
 - v0.5: add new components: 
 ---- cloud storage for data and performance evalutaion logs
 ---- daily cloud schedulers to download one day of data and to run performance evale evaluation
@@ -15,3 +16,4 @@ Currently, I plan the following project dev cycle:
 
 Notes:
 when building v0.1 relying on the standard project dev/prod pipeline, need to do pip install --upgrade google-cloud-storage to make main.py work
+this app requires more RAM than previous ones, so I use F2 GAE instance.

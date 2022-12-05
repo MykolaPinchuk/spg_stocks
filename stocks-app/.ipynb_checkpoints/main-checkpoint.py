@@ -44,6 +44,8 @@ dayopen.reset_index(drop=True, inplace=True)
 dayclose.reset_index(drop=True, inplace=True)
 dayclose.sort_values(by='date')
 
+df = df.tail(30)
+
 asset_list = ['Spx', 'Nasdaq', 'Russel', 'EMXC', 'EEMA', 'EEM', 'VTHR']
 
 df_head = df.iloc[0:(df.shape[0]-15),:]
@@ -112,7 +114,8 @@ prediction_from = df.datetime.iloc[df.shape[0]-1]
 prediction_to = df.datetime.iloc[df.shape[0]-1] + datetime.timedelta(minutes = 2)
     
 
-model_path = '/home/jupyter/project_repos/spg_stocks/spg_stocks/stocks-app/en_model.pkl'
+# model_path = '/home/jupyter/project_repos/spg_stocks/spg_stocks/stocks-app/en_model.pkl'
+model_path = 'en_model.pkl'
 trained_model = joblib.load(open(model_path, "rb"))
 
 X = df.tail(1)
