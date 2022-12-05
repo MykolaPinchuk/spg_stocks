@@ -138,10 +138,11 @@ def home():
     return render_template('home.html')
 @app.route('/predict/', methods=['GET','POST'])
 def predict():
-    return render_template('predict.html', 
-                           prediction=model_prediction,
-                           prediction_from=prediction_from,
-                           prediction_to=prediction_to,
-                           pull_time=pull_time)
+    if request.method == "POST":
+        return render_template('predict.html', 
+                               prediction=model_prediction,
+                               prediction_from=prediction_from,
+                               prediction_to=prediction_to,
+                               pull_time=pull_time)
 if __name__ == '__main__':
     app.run(debug=True)
