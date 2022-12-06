@@ -3,6 +3,7 @@ import pandas as pd
 import os, time, warnings, random, requests, datetime
 import functools as ft
 import yfinance as yf
+from google.cloud import storage
 
 pd.set_option('display.max_columns', 100)
 pd.set_option('mode.chained_assignment', None)
@@ -11,7 +12,9 @@ warnings.filterwarnings('ignore')
 
 time0 = time.time()
 
+project_id = 'valid-heuristic-369117'
 data_path = '/home/jupyter/project_repos/spg_stocks/spg_stocks/data'
+bucket_path = 'gs://pmykola-streaming-projects/spg-stocks/data'
 
 tickerStrings = ['^GSPC', '^IXIC', '^RUT', 'EEM', 'EMXC', 'EEMA', 'VTHR']
 df_list = list()
@@ -44,6 +47,10 @@ str(last_day.day) + \
 
 df.to_csv(file_name)
 
-print(f'''Data downloaded successfully. Stored in {data_path + '/'}. 
+storage_path = os.path.join(bucket_path, file_name)
+blob = storage.blob.Blob.from_string(storage_path,     client=storage.Client(project=project_id))
+blob.upload_from_filename(file_name)
+
+print(f'''Data downloaded successfully. Stored in {data_path + '/'} and {bucket_path}. 
 File has {df.shape[0]} rows, is {os.stat(file_name).st_size/(2**20)} MB.
 Total script time is {time.time()-time0} sec''')

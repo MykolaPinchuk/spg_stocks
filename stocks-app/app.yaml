@@ -1,7 +1,7 @@
 runtime: python38
 service: "russel3000-v03"
 env: standard
-instance_class: F4
+instance_class: F4_1G
 handlers:
   - url: .*
     script: auto
