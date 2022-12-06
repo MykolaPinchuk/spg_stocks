@@ -33,6 +33,7 @@ df = df[['Close', 'ticker']]
 df.replace({'^GSPC':'Spx', '^IXIC':'Nasdaq', '^RUT':'Russel'}, inplace=True)
 df = (df.pivot_table(index=['Datetime'], columns='ticker', values='Close'))
 df.columns = ['EEM', 'EEMA', 'EMXC', 'Nasdaq', 'Russel', 'Spx', 'VTHR']
+display(df)
 
 #print(df.head())
 last_day = df.index.date.max()
