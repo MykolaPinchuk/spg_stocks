@@ -9,8 +9,6 @@ storage_client = storage.Client()
 bucket_name = 'pmykola-streaming-projects'
 BUCKET = storage_client.get_bucket(bucket_name)
 
-now_time = str(pull_time.month) + '_' + str(pull_time.day) + '_' + str(pull_time.hour) + ':' + str(pull_time.minute) + ':' + str(pull_time.second) 
-
 def save_data_to_bucket(request):
   """
   Responds to any HTTP request.
@@ -21,9 +19,11 @@ def save_data_to_bucket(request):
     Response object using
     `make_response <http://flask.pocoo.org/docs/1.0/api/#flask.Flask.make_response>`.
   """
+
   pull_time = datetime.datetime.now()
   pull_time = pull_time.astimezone(pytz.timezone('America/New_York'))
   pull_time = pull_time.replace(tzinfo=None)
+  now_time = str(pull_time.month) + '_' + str(pull_time.day) + '_' + str(pull_time.hour) + ':' + str(pull_time.minute) + ':' + str(pull_time.second) 
 
   tickerStrings = ['^GSPC', '^IXIC', '^RUT', 'EEM', 'EMXC', 'EEMA', 'VTHR']
   df_list = list()
