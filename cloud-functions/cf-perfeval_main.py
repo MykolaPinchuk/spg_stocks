@@ -8,6 +8,7 @@ from sklearn.linear_model import ElasticNet
 from sklearn.metrics import r2_score, mean_squared_error
 from google.cloud import storage
 from io import BytesIO
+import pandas_gbq
 
 # Warning: data folder location is hardcoded for now
 
@@ -170,6 +171,15 @@ def save_perf_eval(request):
 
   blob = BUCKET.blob(file_name)
   blob.upload_from_string(performance.to_csv(), 'text/csv')
+  print('Upload to Cloud Storage complete.')
+
+  project_id = 'valid-heuristic-369117'
+  bucket_path = 'gs://pmykola-streaming-projects/spg-stocks/artifacts/performance-data/'
+  table_id = 'spg_stocks.daily_performance'
+
+  performance.rename(columns={'date':'ddate'}, inplace=True)
+  pandas_gbq.to_gbq(performance, table_id, project_id=project_id, if_exists='append')
+
   result = ('Success: ' + file_name + ' upload complete. ' + 
   'Total time: ' + str(time.time()-time0)[:6] + 'sec')
   return {'response' : result}
