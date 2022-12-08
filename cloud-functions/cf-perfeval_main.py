@@ -123,6 +123,7 @@ def save_perf_eval(request):
   blob.download_to_file(model_file)
   trained_model=joblib.load(model_file)
 
+  # df.date.max()
   this_day = df.loc[df.date == df.date.max()]
   print(f'{this_day.shape[0]} observations this day')
   X = this_day.copy()
@@ -152,8 +153,9 @@ def save_perf_eval(request):
 
   performance = pd.DataFrame([[100*(r2_score(y, y_hat)), model_rmse, constant_rmse, 100*(1-model_rmse/constant_rmse)]], 
                           columns = ['R2', 'model_rmse', 'constant_rmse', 'rmse_improvement'])
+  performance['date'] = df.date.max()
 
-  file_name = 'spg-stocks/artifacts/' + \
+  file_name = 'spg-stocks/artifacts/performance-data/' + \
   'm1_performance_' + \
   str(df.date.max().year) + \
   str(df.date.max().month) + \
@@ -168,6 +170,6 @@ def save_perf_eval(request):
 
   blob = BUCKET.blob(file_name)
   blob.upload_from_string(performance.to_csv(), 'text/csv')
-  result = ('Success' + file_name + ' upload complete. ' + 
-  'Total time: ' + str(time.time()-time0))
+  result = ('Success: ' + file_name + ' upload complete. ' + 
+  'Total time: ' + str(time.time()-time0)[:6] + 'sec')
   return {'response' : result}
