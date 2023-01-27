@@ -20,3 +20,5 @@ Notes:
 
 01/27: fixed a bug in performance evaluation CF. The bug led to failure of cf_perfeval due to large ram allocation.
         fixed it by optimizing a script for cf_perfeval to read only those daily files which are needed.
+        this script was developed in a new repo (spg_stocks_test) on a new vm cpu. this was needed since old vm-cpu in unavailable most of time.
+        
