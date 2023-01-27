@@ -17,3 +17,6 @@ Currently, I plan the following project dev cycle:
 Notes:
 - when building v0.1 relying on the standard project dev/prod pipeline, need to do pip install --upgrade google-cloud-storage to make main.py work
 - this app requires more RAM than previous ones, so I use F2, F4 or F4_1G GAE instance.cThe app is still running slow and often fails. At some point later, would be nice to fix that.
+
+01/27: fixed a bug in performance evaluation CF. The bug led to failure of cf_perfeval due to large ram allocation.
+        fixed it by optimizing a script for cf_perfeval to read only those daily files which are needed.
