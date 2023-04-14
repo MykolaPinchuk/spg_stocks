@@ -10,4 +10,4 @@ automatic_scaling:
   max_idle_instances: automatic
   min_pending_latency: automatic
   max_pending_latency: automatic
-service_account: valid-heuristic-369117@appspot.gserviceaccount.com
+service_account: polished-vault-379315@appspot.gserviceaccount.com
