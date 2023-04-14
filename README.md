@@ -22,3 +22,4 @@ Notes:
         fixed it by optimizing a script for cf_perfeval to read only those daily files which are needed.
         this script was developed in a new repo (spg_stocks_test) on a new vm cpu. this was needed since old vm-cpu in unavailable most of time.
         
+
