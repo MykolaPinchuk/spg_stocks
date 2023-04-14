@@ -10,9 +10,9 @@ Currently, I plan the following project dev cycle:
 ---- cloud storage for data and performance evalutaion logs
 ---- daily Cloud Function/ Cloud Schedulers to download one day of data and to run performance evale evaluation
 - v1.0: add dashboard with performance evaluation
-- v1.5: add model retraining every week
+- v1.5: add model retraining every week (did not implement)
 - v2.0: store data in BigQuery. add dashboard for feature distribution and train-serving skew
-- v2.5: create performance-related alerts 
+- v2.5: create performance-related alerts (did not implement)
 
 Notes:
 - when building v0.1 relying on the standard project dev/prod pipeline, need to do pip install --upgrade google-cloud-storage to make main.py work
@@ -22,4 +22,9 @@ Notes:
         fixed it by optimizing a script for cf_perfeval to read only those daily files which are needed.
         this script was developed in a new repo (spg_stocks_test) on a new vm cpu. this was needed since old vm-cpu in unavailable most of time.
         
+planned:
+- v3: refactor the whole project following GCP best practices. use vertex for model registry and deploy them at a vertex endpoint. Build production pipeline: data preprocessing -> vertex endpont -> app. having preprocessing and a model artifact embedded into a webapp is not a good practice.
+- v3.5: refactor performance monitoring part to use builtin monitoring in vertex if possible.
+
+
 
