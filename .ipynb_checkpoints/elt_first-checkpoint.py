@@ -12,9 +12,9 @@ warnings.filterwarnings('ignore')
 
 time0 = time.time()
 
-project_id = 'valid-heuristic-369117'
-data_path = '/home/jupyter/project_repos/spg_stocks/spg_stocks/data'
-bucket_path = 'gs://pmykola-streaming-projects/spg-stocks/data'
+project_id = 'polished-vault-379315'
+data_path = '/home/jupyter/project_repos/spg_stocks/data'
+bucket_path = 'gs://mpg3-stocks/data'
 
 tickerStrings = ['^GSPC', '^IXIC', '^RUT', 'EEM', 'EMXC', 'EEMA', 'VTHR']
 df_list = list()
@@ -48,7 +48,7 @@ str(first_day.day) + \
 df.to_csv(file_name)
 
 storage_path = os.path.join(bucket_path, file_name)
-blob = storage.blob.Blob.from_string(storage_path,     client=storage.Client(project=project_id))
+blob = storage.blob.Blob.from_string(storage_path, client=storage.Client(project=project_id))
 blob.upload_from_filename(file_name)
 
 print(f'''Data downloaded successfully. Stored in {data_path + '/'} and {bucket_path}. 
