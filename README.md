@@ -22,9 +22,8 @@ Notes:
         fixed it by optimizing a script for cf_perfeval to read only those daily files which are needed.
         this script was developed in a new repo (spg_stocks_test) on a new vm cpu. this was needed since old vm-cpu in unavailable most of time.
         
-planned:
-- v3: refactor the whole project following GCP best practices. use vertex for model registry and deploy them at a vertex endpoint. Build production pipeline: data preprocessing -> vertex endpont -> app. having preprocessing and a model artifact embedded into a webapp is not a good practice.
-- v3.5: refactor performance monitoring part to use builtin monitoring in vertex if possible.
+I am abandoning this project in favor of 'stocks_ete' repo. It implements this solution in production-grade Kubefloe pipeline.
+I have stopped after implementing v1.0.
 
 
 
