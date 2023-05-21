@@ -14,6 +14,8 @@ Currently, I plan the following project dev cycle:
 - v2.0: store data in BigQuery. add dashboard for feature distribution and train-serving skew
 - v2.5: create performance-related alerts (did not implement)
 
+I have stopped after implementing v1.0.
+
 Notes:
 - when building v0.1 relying on the standard project dev/prod pipeline, need to do pip install --upgrade google-cloud-storage to make main.py work
 - this app requires more RAM than previous ones, so I use F2, F4 or F4_1G GAE instance.cThe app is still running slow and often fails. At some point later, would be nice to fix that.
@@ -22,8 +24,8 @@ Notes:
         fixed it by optimizing a script for cf_perfeval to read only those daily files which are needed.
         this script was developed in a new repo (spg_stocks_test) on a new vm cpu. this was needed since old vm-cpu in unavailable most of time.
         
-I am abandoning this project in favor of 'stocks_ete' repo. It implements this solution in production-grade Kubefloe pipeline.
-I have stopped after implementing v1.0.
+I am abandoning this project in favor of 'stocks_ete' repo. It implements this solution in production-grade Kuberflow pipeline.
+model.ipynb is the starting point of stocks_ete project.
 
 
 
